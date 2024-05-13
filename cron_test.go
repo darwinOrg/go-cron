@@ -43,3 +43,19 @@ func TestAddJobWithLock(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 }
+
+func TestAddFixDurationJob(t *testing.T) {
+	AddFixDurationJob("TestJob", time.Second, func(ctx *dgctx.DgContext) {
+		fmt.Println(time.Now().UnixMilli())
+	})
+
+	time.Sleep(5 * time.Second)
+}
+
+func TestAddFixDelayJob(t *testing.T) {
+	AddFixDelayJob("TestJob", time.Second, func(ctx *dgctx.DgContext) {
+		fmt.Println(time.Now().UnixMilli())
+	})
+
+	time.Sleep(5 * time.Second)
+}
