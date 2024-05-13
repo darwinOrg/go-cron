@@ -6,8 +6,10 @@ import (
 	dglock "github.com/darwinOrg/go-dlock"
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
+	"github.com/rolandhe/saber/gocc"
 	"log"
 	"sync"
+	"time"
 )
 
 type DgCron struct {
@@ -29,10 +31,10 @@ func (dc *DgCron) Stop() {
 }
 
 func (dc *DgCron) AddJob(name string, spec string, job DgJob) {
-	dc.cron.AddFunc(spec, func() {
+	log.Printf("add spec job, name: %s, spec: %s", name, spec)
+	_, _ = dc.cron.AddFunc(spec, func() {
 		job(&dgctx.DgContext{TraceId: uuid.NewString(), UserId: 0})
 	})
-	log.Printf("add job, name: %s, spec: %s", name, spec)
 }
 
 func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job DgJob) {
@@ -41,14 +43,57 @@ func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job 
 		return
 	}
 
-	dc.cron.AddFunc(spec, func() {
-		ctx := &dgctx.DgContext{TraceId: uuid.NewString(), UserId: 0}
+	log.Printf("add spec job, name: %s, spec: %s, lockMilli: %d", name, spec, lockMilli)
+	_, _ = dc.cron.AddFunc(spec, func() {
+		ctx := &dgctx.DgContext{TraceId: uuid.NewString()}
 		if dc.locker.DoLock(ctx, name, lockMilli) {
 			defer dc.locker.Unlock(ctx, name)
 			job(ctx)
 		}
 	})
-	log.Printf("add job, name: %s, spec: %s, lockMilli: %d", name, spec, lockMilli)
+}
+
+func (dc *DgCron) AddFixDurationJob(name string, duration time.Duration, job DgJob) {
+	log.Printf("add fix duration job, name: %s, duration: %s", name, duration)
+	ticker := time.NewTicker(duration)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			}
+		}
+	}()
+}
+
+func (dc *DgCron) AddFixDelayJob(name string, delay time.Duration, job DgJob) {
+	log.Printf("add fix delay job, name: %s, delay: %s", name, delay)
+
+	go func() {
+		for {
+			time.Sleep(delay)
+
+			job(&dgctx.DgContext{TraceId: uuid.NewString()})
+		}
+	}()
+}
+
+func (dc *DgCron) AddSemaphoreJob(name string, limit uint, sleepDuration time.Duration, job DgJob) {
+	log.Printf("add semaphore job, name: %s, sleepDuration: %s", name, sleepDuration)
+	semaphore := gocc.NewDefaultSemaphore(limit)
+
+	go func() {
+		for {
+			if !semaphore.TryAcquire() {
+				time.Sleep(sleepDuration)
+				continue
+			}
+
+			job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			semaphore.Release()
+		}
+	}()
 }
 
 // newWithSeconds returns a Cron with the seconds field enabled.
