@@ -4,8 +4,10 @@ import (
 	"bytes"
 	dgctx "github.com/darwinOrg/go-common/context"
 	dglock "github.com/darwinOrg/go-dlock"
+	dglogger "github.com/darwinOrg/go-logger"
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
+	"github.com/rolandhe/saber/gocc"
 	"log"
 	"sync"
 	"time"
@@ -75,6 +77,20 @@ func AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 			job(&dgctx.DgContext{TraceId: uuid.NewString()})
 		}
 	}()
+}
+
+func RunSemaphoreJob(ctx *dgctx.DgContext, name string, semaphore gocc.Semaphore, timeout time.Duration, job DgJob) bool {
+	if !semaphore.AcquireTimeout(timeout) {
+		return false
+	}
+
+	go func() {
+		defer semaphore.Release()
+		dglogger.Infof(ctx, "run semaphore job, name: %s", name)
+		job(ctx)
+	}()
+
+	return true
 }
 
 // newWithSeconds returns a Cron with the seconds field enabled.

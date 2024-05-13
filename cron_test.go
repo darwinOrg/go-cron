@@ -5,7 +5,9 @@ import (
 	dgctx "github.com/darwinOrg/go-common/context"
 	dglock "github.com/darwinOrg/go-dlock"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/rolandhe/daog"
+	"github.com/rolandhe/saber/gocc"
 	"log"
 	"testing"
 	"time"
@@ -58,4 +60,17 @@ func TestAddFixDelayJob(t *testing.T) {
 	})
 
 	time.Sleep(5 * time.Second)
+}
+
+func TestRunSemaphoreJob(t *testing.T) {
+	semaphore := gocc.NewDefaultSemaphore(3)
+
+	for i := 0; i < 10; i++ {
+		ctx := &dgctx.DgContext{TraceId: uuid.NewString()}
+		_ = RunSemaphoreJob(ctx, "TestJob", semaphore, time.Second, func(ctx *dgctx.DgContext) {
+			fmt.Println(time.Now().UnixMilli())
+		})
+	}
+
+	time.Sleep(10 * time.Second)
 }
