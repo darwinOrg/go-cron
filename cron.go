@@ -59,8 +59,6 @@ func AddFixDurationJob(name string, duration time.Duration, job DgJob) {
 	ticker := time.NewTicker(duration)
 
 	go func() {
-		go job(&dgctx.DgContext{TraceId: uuid.NewString()})
-
 		for {
 			select {
 			case <-ticker.C:
@@ -75,8 +73,8 @@ func AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 
 	go func() {
 		for {
-			job(&dgctx.DgContext{TraceId: uuid.NewString()})
 			<-time.NewTimer(delay).C
+			job(&dgctx.DgContext{TraceId: uuid.NewString()})
 		}
 	}()
 }
