@@ -6,7 +6,6 @@ import (
 	dglock "github.com/darwinOrg/go-dlock"
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
-	"github.com/rolandhe/saber/gocc"
 	"log"
 	"sync"
 	"time"
@@ -75,23 +74,6 @@ func (dc *DgCron) AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 			time.Sleep(delay)
 
 			job(&dgctx.DgContext{TraceId: uuid.NewString()})
-		}
-	}()
-}
-
-func (dc *DgCron) AddSemaphoreJob(name string, limit uint, sleepDuration time.Duration, job DgJob) {
-	log.Printf("add semaphore job, name: %s, sleepDuration: %s", name, sleepDuration)
-	semaphore := gocc.NewDefaultSemaphore(limit)
-
-	go func() {
-		for {
-			if !semaphore.TryAcquire() {
-				time.Sleep(sleepDuration)
-				continue
-			}
-
-			job(&dgctx.DgContext{TraceId: uuid.NewString()})
-			semaphore.Release()
 		}
 	}()
 }

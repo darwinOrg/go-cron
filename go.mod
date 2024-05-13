@@ -14,7 +14,6 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/darwinOrg/go-logger v0.0.6 // indirect
-	github.com/rolandhe/saber v0.0.4 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 )
