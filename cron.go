@@ -71,9 +71,9 @@ func (dc *DgCron) AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 
 	go func() {
 		for {
-			time.Sleep(delay)
-
-			job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			time.AfterFunc(delay, func() {
+				job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			})
 		}
 	}()
 }
