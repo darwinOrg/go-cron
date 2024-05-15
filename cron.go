@@ -56,14 +56,11 @@ func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job 
 
 func AddFixDurationJob(name string, duration time.Duration, job DgJob) {
 	log.Printf("add fix duration job, name: %s, duration: %s", name, duration)
-	ticker := time.NewTicker(duration)
 
 	go func() {
 		for {
-			select {
-			case <-ticker.C:
-				go job(&dgctx.DgContext{TraceId: uuid.NewString()})
-			}
+			go job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			time.Sleep(duration)
 		}
 	}()
 }
@@ -73,8 +70,8 @@ func AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 
 	go func() {
 		for {
-			<-time.NewTimer(delay).C
 			job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			time.Sleep(delay)
 		}
 	}()
 }
