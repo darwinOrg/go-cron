@@ -1,9 +1,11 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
-github.com/darwinOrg/go-common v0.1.46 h1:sq4u5+wRGeBkwOS4q+lisyImn6lPjC7G+LJru8huaKs=
-github.com/darwinOrg/go-common v0.1.46/go.mod h1:pItL/4ZV0bU64N2qD9ACpvDlYjeomAbheIzPXKqbb88=
-github.com/darwinOrg/go-dlock v0.0.2 h1:XzjhZxLe7tBRnsarXAkmymfGpy2mLN/KtgW1ncFe0A0=
-github.com/darwinOrg/go-dlock v0.0.2/go.mod h1:yAYN+AbFFMj5zKUdpfImPSFpGsOxLLHROVh0A21tLyY=
+github.com/darwinOrg/daog-ext v0.0.4 h1:gEeJuilPu6p2hnYO0OjVfmaZ5C9NuL76fR8IpDZWTZg=
+github.com/darwinOrg/daog-ext v0.0.4/go.mod h1:cA37RBvyST0ARTVFd0BwSiZgFSf45iGVQYYLdVuCEZw=
+github.com/darwinOrg/go-common v0.1.53 h1:b2xfb7AS+3DOMHGBik8WGfzzwMhqKVr7DG14+UOVCrA=
+github.com/darwinOrg/go-common v0.1.53/go.mod h1:pItL/4ZV0bU64N2qD9ACpvDlYjeomAbheIzPXKqbb88=
+github.com/darwinOrg/go-dlock v0.0.3 h1:KswPRY+Y5LXh5fvg1xnCOJKq8PDGX9PRqH5aUeWBBUg=
+github.com/darwinOrg/go-dlock v0.0.3/go.mod h1:zIBss1Nmj6lArPffQtP+wCERHGsv/WNYYUs+dYo32ZA=
 github.com/darwinOrg/go-logger v0.0.6 h1:d4n71HquXZV+oKJFEIGrwoidn8e/aqKaXCB/hl+lqng=
 github.com/darwinOrg/go-logger v0.0.6/go.mod h1:9zM9B+2hm8dHADsLYocsdkX2w72Q04i/4zWg9OC3WU0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
