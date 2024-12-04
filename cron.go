@@ -5,7 +5,6 @@ import (
 	dgctx "github.com/darwinOrg/go-common/context"
 	dglock "github.com/darwinOrg/go-dlock"
 	dglogger "github.com/darwinOrg/go-logger"
-	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
 	"github.com/rolandhe/saber/gocc"
 	"log"
@@ -34,7 +33,13 @@ func (dc *DgCron) Stop() {
 func (dc *DgCron) AddJob(name string, spec string, job DgJob) {
 	log.Printf("add spec job, name: %s, spec: %s", name, spec)
 	_, _ = dc.cron.AddFunc(spec, func() {
-		job(&dgctx.DgContext{TraceId: uuid.NewString(), UserId: 0})
+		ctx := dgctx.SimpleDgContext()
+		defer func() {
+			if err := recover(); err != nil {
+				dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
+			}
+		}()
+		job(ctx)
 	})
 }
 
@@ -46,9 +51,15 @@ func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job 
 
 	log.Printf("add spec job, name: %s, spec: %s, lockMilli: %d", name, spec, lockMilli)
 	_, _ = dc.cron.AddFunc(spec, func() {
-		ctx := &dgctx.DgContext{TraceId: uuid.NewString()}
+		ctx := dgctx.SimpleDgContext()
 		if dc.locker.DoLock(ctx, name, lockMilli) {
-			defer dc.locker.Unlock(ctx, name)
+			defer func() {
+				dc.locker.Unlock(ctx, name)
+
+				if err := recover(); err != nil {
+					dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
+				}
+			}()
 			job(ctx)
 		}
 	})
@@ -58,8 +69,14 @@ func AddFixDurationJob(name string, duration time.Duration, job DgJob) {
 	log.Printf("add fix duration job, name: %s, duration: %s", name, duration)
 
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				dglogger.Errorf(dgctx.SimpleDgContext(), "job panic, name: %s, err: %v", name, err)
+			}
+		}()
+
 		for {
-			go job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			go job(dgctx.SimpleDgContext())
 			time.Sleep(duration)
 		}
 	}()
@@ -69,8 +86,14 @@ func AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 	log.Printf("add fix delay job, name: %s, delay: %s", name, delay)
 
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				dglogger.Errorf(dgctx.SimpleDgContext(), "job panic, name: %s, err: %v", name, err)
+			}
+		}()
+
 		for {
-			job(&dgctx.DgContext{TraceId: uuid.NewString()})
+			job(dgctx.SimpleDgContext())
 			time.Sleep(delay)
 		}
 	}()
@@ -82,7 +105,14 @@ func RunSemaphoreJob(ctx *dgctx.DgContext, name string, semaphore gocc.Semaphore
 	}
 
 	go func() {
-		defer semaphore.Release()
+		defer func() {
+			defer semaphore.Release()
+
+			if err := recover(); err != nil {
+				dglogger.Errorf(dgctx.SimpleDgContext(), "job panic, name: %s, err: %v", name, err)
+			}
+		}()
+
 		dglogger.Infof(ctx, "run semaphore job, name: %s", name)
 		job(ctx)
 	}()
