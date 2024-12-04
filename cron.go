@@ -54,11 +54,10 @@ func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job 
 		ctx := dgctx.SimpleDgContext()
 		if dc.locker.DoLock(ctx, name, lockMilli) {
 			defer func() {
-				dc.locker.Unlock(ctx, name)
-
 				if err := recover(); err != nil {
 					dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
 				}
+				dc.locker.Unlock(ctx, name)
 			}()
 			job(ctx)
 		}
@@ -106,11 +105,10 @@ func RunSemaphoreJob(ctx *dgctx.DgContext, name string, semaphore gocc.Semaphore
 
 	go func() {
 		defer func() {
-			defer semaphore.Release()
-
 			if err := recover(); err != nil {
 				dglogger.Errorf(dgctx.SimpleDgContext(), "job panic, name: %s, err: %v", name, err)
 			}
+			semaphore.Release()
 		}()
 
 		dglogger.Infof(ctx, "run semaphore job, name: %s", name)
