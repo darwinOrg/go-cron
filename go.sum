@@ -5,6 +5,8 @@ github.com/darwinOrg/daog-ext v0.0.4 h1:gEeJuilPu6p2hnYO0OjVfmaZ5C9NuL76fR8IpDZW
 github.com/darwinOrg/daog-ext v0.0.4/go.mod h1:cA37RBvyST0ARTVFd0BwSiZgFSf45iGVQYYLdVuCEZw=
 github.com/darwinOrg/go-common v0.1.70 h1:ZrftuYITgAUcwToc2Pr/83Bc39VFXOD3bfWpkhSrnTg=
 github.com/darwinOrg/go-common v0.1.70/go.mod h1:pItL/4ZV0bU64N2qD9ACpvDlYjeomAbheIzPXKqbb88=
+github.com/darwinOrg/go-common v0.1.71 h1:PgY7exD95VB17KiA4ysfmgQ5JCdEtz1FHCy8LI38yQ8=
+github.com/darwinOrg/go-common v0.1.71/go.mod h1:pItL/4ZV0bU64N2qD9ACpvDlYjeomAbheIzPXKqbb88=
 github.com/darwinOrg/go-dlock v0.0.4 h1:n7xd7cC8j3V+Kpsexy8EVP3mi2HYx6Ep93bIPCJG9CY=
 github.com/darwinOrg/go-dlock v0.0.4/go.mod h1:3vbTt1FqlNsNZKSW2eDFHdVmX7X984ZXBQfBZozoaeE=
 github.com/darwinOrg/go-logger v0.0.8 h1:5mNrLkCb64cLEp73CAguKAdGelviPIZjDozRJxUxD8g=

@@ -3,7 +3,7 @@ module github.com/darwinOrg/go-cron
 go 1.19
 
 require (
-	github.com/darwinOrg/go-common v0.1.70
+	github.com/darwinOrg/go-common v0.1.71
 	github.com/darwinOrg/go-dlock v0.0.4
 	github.com/darwinOrg/go-logger v0.0.8
 	github.com/go-sql-driver/mysql v1.8.1
