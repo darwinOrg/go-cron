@@ -49,11 +49,11 @@ func (dc *DgCron) AddJobWithTimeout(name string, spec string, timeout time.Durat
 	log.Printf("add spec job with timeout, name: %s, spec: %s, timeout: %d", name, spec, timeout)
 	_, _ = dc.cron.AddFunc(spec, func() {
 		ctx, cancel := dgctx.WithTimeout(context.Background(), timeout)
+		defer cancel()
 		defer func() {
 			if err := recover(); err != nil {
 				dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
 			}
-			cancel()
 		}()
 		job(ctx, cancel)
 	})
@@ -69,11 +69,11 @@ func (dc *DgCron) AddJobWithLock(name string, spec string, lockMilli int64, job 
 	_, _ = dc.cron.AddFunc(spec, func() {
 		ctx := dgctx.SimpleDgContext()
 		if dc.locker.DoLock(ctx, name, lockMilli) {
+			defer dc.locker.Unlock(ctx, name)
 			defer func() {
 				if err := recover(); err != nil {
 					dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
 				}
-				dc.locker.Unlock(ctx, name)
 			}()
 			job(ctx)
 		}
@@ -89,13 +89,13 @@ func (dc *DgCron) AddJobWithLockAndTimeout(name string, spec string, lockMilli i
 	log.Printf("add spec job, name: %s, spec: %s, lockMilli: %d, timeout: %d", name, spec, lockMilli, timeout)
 	_, _ = dc.cron.AddFunc(spec, func() {
 		ctx, cancel := dgctx.WithTimeout(context.Background(), timeout)
+		defer cancel()
 		if dc.locker.DoLock(ctx, name, lockMilli) {
+			defer dc.locker.Unlock(ctx, name)
 			defer func() {
 				if err := recover(); err != nil {
 					dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
 				}
-				dc.locker.Unlock(ctx, name)
-				cancel()
 			}()
 			job(ctx, cancel)
 		}
@@ -129,11 +129,11 @@ func AddFixDurationJobWithTimeout(name string, duration time.Duration, timeout t
 		for {
 			go func() {
 				ctx, cancel := dgctx.WithTimeout(context.Background(), timeout)
+				defer cancel()
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
 					}
-					cancel()
 				}()
 				job(ctx, cancel)
 			}()
@@ -170,11 +170,11 @@ func AddFixDelayJobWithTimeout(name string, delay time.Duration, timeout time.Du
 		for {
 			func() {
 				ctx, cancel := dgctx.WithTimeout(context.Background(), timeout)
+				defer cancel()
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
 					}
-					cancel()
 				}()
 				job(ctx, cancel)
 			}()
@@ -190,12 +190,12 @@ func RunSemaphoreJob(ctx *dgctx.DgContext, name string, semaphore gocc.Semaphore
 	}
 
 	go func() {
+		defer semaphore.Release()
 		dglogger.Infof(ctx, "run semaphore job, name: %s", name)
 		defer func() {
 			if err := recover(); err != nil {
 				dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
 			}
-			semaphore.Release()
 		}()
 		job(ctx)
 	}()
@@ -209,14 +209,14 @@ func RunSemaphoreJobWithTimeout(ctx *dgctx.DgContext, name string, semaphore goc
 	}
 
 	go func() {
+		defer semaphore.Release()
 		dglogger.Infof(ctx, "run semaphore job, name: %s", name)
 		cancel := ctx.WithTimeout(context.Background(), jobTimeout)
+		defer cancel()
 		defer func() {
 			if err := recover(); err != nil {
 				dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
 			}
-			semaphore.Release()
-			cancel()
 		}()
 		job(ctx, cancel)
 	}()

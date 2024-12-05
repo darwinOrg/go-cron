@@ -3,13 +3,13 @@ module github.com/darwinOrg/go-cron
 go 1.19
 
 require (
-	github.com/darwinOrg/go-common v0.1.71
+	github.com/darwinOrg/go-common v0.1.72
 	github.com/darwinOrg/go-dlock v0.0.4
-	github.com/darwinOrg/go-logger v0.0.8
+	github.com/darwinOrg/go-logger v0.0.9
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/rolandhe/daog v0.0.36
-	github.com/rolandhe/saber v0.0.4
+	github.com/rolandhe/daog v0.0.39
+	github.com/rolandhe/saber v0.0.5
 )
 
 require (
