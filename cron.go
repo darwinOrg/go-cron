@@ -225,7 +225,7 @@ func RunSemaphoreJobWithTimeout(ctx *dgctx.DgContext, name string, semaphore goc
 	return true
 }
 
-func RunOnceMap[T any, R any](slice []T, poolSize int, iteratee func(item T, index int) R) []R {
+func RunParallelMap[T any, R any](slice []T, poolSize int, iteratee func(item T, index int) R) []R {
 	p, _ := ants.NewPool(poolSize)
 	defer p.Release()
 	result := make([]R, len(slice))
