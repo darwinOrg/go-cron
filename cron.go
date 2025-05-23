@@ -6,6 +6,7 @@ import (
 	dgctx "github.com/darwinOrg/go-common/context"
 	dglock "github.com/darwinOrg/go-dlock"
 	dglogger "github.com/darwinOrg/go-logger"
+	"github.com/panjf2000/ants"
 	"github.com/robfig/cron/v3"
 	"github.com/rolandhe/saber/gocc"
 	"log"
@@ -222,6 +223,26 @@ func RunSemaphoreJobWithTimeout(ctx *dgctx.DgContext, name string, semaphore goc
 	}()
 
 	return true
+}
+
+func RunOnceMap[T any, R any](slice []T, poolSize int, iteratee func(item T, index int) R) []R {
+	p, _ := ants.NewPool(poolSize)
+	defer p.Release()
+	result := make([]R, len(slice))
+
+	var wg sync.WaitGroup
+	wg.Add(len(slice))
+
+	for i, item := range slice {
+		_ = p.Submit(func() {
+			res := iteratee(item, i)
+			result[i] = res
+			wg.Done()
+		})
+	}
+
+	wg.Wait()
+	return result
 }
 
 // newWithSeconds returns a Cron with the seconds field enabled.
