@@ -235,9 +235,8 @@ func RunParallelMap[T any, R any](slice []T, poolSize int, iteratee func(item T,
 
 	for i, item := range slice {
 		_ = p.Submit(func() {
-			res := iteratee(item, i)
-			result[i] = res
-			wg.Done()
+			defer wg.Done()
+			result[i] = iteratee(item, i)
 		})
 	}
 
