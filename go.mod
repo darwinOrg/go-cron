@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/darwinOrg/go-common v0.2.9
-	github.com/darwinOrg/go-dlock v0.0.6
+	github.com/darwinOrg/go-dlock v0.0.7
 	github.com/darwinOrg/go-logger v0.0.14
 	github.com/darwinOrg/go-redis v0.0.31
 	github.com/panjf2000/ants/v2 v2.11.3
@@ -15,7 +15,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/darwinOrg/daog-ext v0.0.14 // indirect
+	github.com/darwinOrg/daog-ext v0.0.15 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
