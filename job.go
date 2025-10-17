@@ -7,10 +7,19 @@ import (
 	"time"
 
 	dgctx "github.com/darwinOrg/go-common/context"
+	dgerr "github.com/darwinOrg/go-common/enums/error"
 	dglogger "github.com/darwinOrg/go-logger"
 	"github.com/panjf2000/ants/v2"
 	"github.com/rolandhe/saber/gocc"
 )
+
+type RecoverProcessor func(ctx *dgctx.DgContext, name, errorMessage string)
+
+var recoverProcessors []RecoverProcessor
+
+func RegisterRecoverProcessor(processor RecoverProcessor) {
+	recoverProcessors = append(recoverProcessors, processor)
+}
 
 func AddFixDurationJob(name string, duration time.Duration, job DgJob) {
 	log.Printf("add fix duration job, name: %s, duration: %s", name, duration)
@@ -22,6 +31,7 @@ func AddFixDurationJob(name string, duration time.Duration, job DgJob) {
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
+						processRecover(ctx, name, err)
 					}
 				}()
 				job(ctx)
@@ -43,6 +53,7 @@ func AddFixDurationJobWithTimeout(name string, duration time.Duration, timeout t
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
+						processRecover(ctx, name, err)
 					}
 				}()
 				job(ctx, cancel)
@@ -63,6 +74,7 @@ func AddFixDelayJob(name string, delay time.Duration, job DgJob) {
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
+						processRecover(ctx, name, err)
 					}
 				}()
 				job(ctx)
@@ -84,6 +96,7 @@ func AddFixDelayJobWithTimeout(name string, delay time.Duration, timeout time.Du
 				defer func() {
 					if err := recover(); err != nil {
 						dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
+						processRecover(ctx, name, err)
 					}
 				}()
 				job(ctx, cancel)
@@ -105,6 +118,7 @@ func RunSemaphoreJob(ctx *dgctx.DgContext, name string, semaphore gocc.Semaphore
 		defer func() {
 			if err := recover(); err != nil {
 				dglogger.Errorf(ctx, "job panic, name: %s, err: %v", name, err)
+				processRecover(ctx, name, err)
 			}
 		}()
 		job(ctx)
@@ -126,6 +140,7 @@ func RunSemaphoreJobWithTimeout(ctx *dgctx.DgContext, name string, semaphore goc
 		defer func() {
 			if err := recover(); err != nil {
 				dglogger.Errorf(ctx, "job with timeout panic, name: %s, err: %v", name, err)
+				processRecover(ctx, name, err)
 			}
 		}()
 		job(ctx, cancel)
@@ -151,4 +166,24 @@ func RunParallelMap[T any, R any](slice []T, poolSize int, iteratee func(item T,
 
 	wg.Wait()
 	return result
+}
+
+func processRecover(ctx *dgctx.DgContext, name string, err any) {
+	if len(recoverProcessors) == 0 {
+		return
+	}
+
+	var errorMessage string
+	switch err.(type) {
+	case string:
+		errorMessage = err.(string)
+	case error:
+		errorMessage = err.(error).Error()
+	default:
+		errorMessage = dgerr.SYSTEM_ERROR.Message
+	}
+
+	for _, processor := range recoverProcessors {
+		processor(ctx, name, errorMessage)
+	}
 }
